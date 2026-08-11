@@ -4,7 +4,7 @@ import { db } from "../../utils/firebase.config";
 import { AuthContext } from "../../AuthProvider/AuthProvider"; 
 
 const StudioDashboard = () => {
-  const { user, login, logout, loading } = useContext(AuthContext); 
+  const { user, login, logout, isLoading } = useContext(AuthContext); 
   
   // Tab State
   const [activeTab, setActiveTab] = useState("commissions"); // 'commissions', 'inquiries', or 'users'
@@ -71,7 +71,7 @@ const StudioDashboard = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-base-white"></div>;
+  if (isLoading) return <div className="min-h-screen bg-base-white"></div>;
 
   // 🛑 IF NOT LOGGED IN
   if (!isAdmin) {
