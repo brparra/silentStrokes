@@ -8,8 +8,8 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-
-import { app, db } from "../utils/firebase.config";
+// 👇 Import db and Firestore functions
+import { app, db } from "../utils/firebase.config"; 
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export const AuthContext = createContext();
@@ -17,25 +17,27 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
-
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Google Login
+  // 1. Google Login (UPDATED WITH FIRESTORE CHECK)
   const googleLogin = async () => {
     try {
+      // Trigger the Google popup
       const result = await signInWithPopup(auth, googleProvider);
       const loggedInUser = result.user;
 
+      // Check if this user already exists in your Firestore "users" collection
       const userRef = doc(db, "users", loggedInUser.uid);
       const userSnap = await getDoc(userRef);
 
+      // If they DO NOT exist, create a new profile for them
       if (!userSnap.exists()) {
         await setDoc(userRef, {
           name: loggedInUser.displayName || "Google User",
           email: loggedInUser.email,
           createdAt: new Date(),
-          role: "customer",
+          role: "customer"
         });
       }
 
@@ -46,29 +48,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Email/Password Login
+  // 2. Email/Password Login
   const login = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // Email/Password Sign Up
+  // 3. Email/Password Sign Up
   const signUp = (email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  // Logout
+  // 4. Log Out
   const logout = () => {
     return signOut(auth);
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsLoading(false);
     });
-
     return () => {
-      unsubscribe();
+      unSubscribe();
     };
   }, [auth]);
 
